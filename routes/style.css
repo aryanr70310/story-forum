@@ -1,0 +1,23 @@
+body{
+    background-image: url('download.jpg');
+}
+p.thing{
+    cursor: pointer;
+    text-align: center;
+position: relative;
+padding: 12px 8px 12px 40px;
+list-style-type: none;
+background: #eee;
+font-size: 18px;
+transition: 0.2s;
+}
+.bruh{
+background-color: rgb(153, 201, 211) ;border:none;padding:20px 20px;text-align: center;display: inline-block;
+font-size: 16px; cursor: pointer;
+border-style: solid;
+margin:1px 1px;
+}
+div.login{
+float: right;
+margin-top: -100px;
+}

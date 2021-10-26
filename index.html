@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Story Forum</title>
+</head>
+        <h1>Story Forum</h1>
+        <div id="login" class="login"><h4>Create Account</h4>
+        <form id="postSign">
+            <p class=formp >
+                <input type="text" name="author" placeholder="Author name ..." class="formu" id="author_create" style="background-color: rgb(236, 176, 176);">
+            </p>
+            <p class=formp>
+                <input type="text" name="password" placeholder="Password ..." class="formu" id="pass_create" style="background-color: rgb(236, 184, 184);">
+            </p>
+            <p class=formp>
+                <input type="text" name="passsword" placeholder="Retype Password ..." class="formu" id="pass__create" style="background-color: rgb(236, 184, 184);">
+            </p>
+            <p class=formp>
+            <input type="submit" value="Create" style=" background-color: rgb(236, 176, 176) ;border-style:inset;padding:2px 30px;text-align:left;display: inline-block;font-size: 12px; cursor: pointer;">
+            </p>
+        </form>
+    </div>
+    <div>
+        <input type="submit" value="Show List of Authors" style=" background-color: rgb(153, 201, 211) ;border-style:solid;padding:35px 320px;text-align: center;display: inline-block;font-size: 16px;margin:4px 2px; cursor: pointer;" id="getAuthors"> 
+        <div id="result1"></div>
+        <div id="result2"></div>
+        <div id="result3"></div>
+        <div>
+            <h2>Submit Story</h2>
+        </div>
+        <form id="postData">
+            <p>
+                <input type="text" name="author" placeholder="Author name ..." id="author_name" style="background-color: rgb(236, 184, 184);">
+            </p>
+            <p>
+                <input type="text" name="password" placeholder="Password ..." id="pass_word" style="background-color: rgb(236, 184, 184);">
+            </p>
+        <p>
+                <input type="text" name="title" placeholder="Story title ..." id="story_title" style="background-color: rgb(236, 184, 184);">
+                </p>
+            <p>
+                <textarea name="story" placeholder="Story" id="body" cols="20" rows="5" style="background-color: rgb(236, 184, 184);"></textarea>
+            </p>
+            <input type="submit" value="Send Story" style=" background-color: rgb(236, 176, 176) ;border-style:inset;padding:2px 30px;text-align:left;display: inline-block;font-size: 12px; cursor: pointer;">
+        </form>
+    </div>
+<script>//All client side javascript
+    var bufferstr1="";//Used to maintain asynchronous style
+    var bufferstr2="";//Used to maintain asynchronous style
+    document.getElementById('getAuthors').addEventListener('click',function getAuthors(){//Gets list of authors who have written at least 1 story 
+        try{
+        fetch('/api/author_list')//Gets list of authors who have written at least 1 story 
+        .then(function (res) {
+                    return res.json();
+                })
+                .then(function (data) {
+                    var temp1 =[];//to store each author
+                    let result1 = `<h2> List of Authors: </h2>`;
+                    for(var i in data){
+                        temp1.push(data[i]);
+                        result1+=`<input type="submit" class="title bruh" value="${temp1[i]}" id="${temp1[i]}1">`;
+                    }//prints authors onto the webage as buttons in a <p> element
+                    document.getElementById('result1').innerHTML = result1;
+                    document.getElementById('result1').scrollIntoView();
+                    var buffer1=0;//Used to maintain asynchronous style
+                        for(let i in temp1){//adding event listener for buttons corresponding to each author
+                            document.getElementById(temp1[i]+"1").addEventListener('click',function getTitles(){//Gets titles of specific author
+                                try{
+                                const title_route='/api/stories/'+temp1[i];//Gets titles of specific author temp1[i]
+                                fetch(title_route)
+                                .then(function (res) {
+                                    return res.json();
+                                })
+                                .then(function(data){
+                                    var temp2=[];
+                                    let result2=`<h2> List of Stories by author ${temp1[i]} </h2>`;
+                                    for (var k in data){
+                                        temp2.push(data[k]);
+                                        result2+=`<input type="submit" class="title bruh" value="${temp2[k]}" id="${temp2[k]}">`;
+                                    }//prints each title onto the webpage as buttons within a <p> element
+                                    document.getElementById('result2').innerHTML = result2;
+                                    document.getElementById('result2').scrollIntoView();
+                                    buffer1+=1;
+                                    if(buffer1>0){
+                                        buffer1=0;
+                                        bufferstr1=temp1[i];
+                                        getAuthors();
+                                    }
+                                    var buffer2 = 0;//Used to maintain asynchronous style
+                                    for (let j in temp2){//adding event listener for each title by a specific author
+                                        document.getElementById(temp2[j]).addEventListener('click',function getStories(){//gets actual story by specified author of specified title
+                                            try{
+                                            const story_route='/api/stories/'+bufferstr1+'/'+temp2[j];
+                                            fetch(story_route)
+                                            .then(function(res){
+                                                return res.json();
+                                            })
+                                            .then(function(data){//prints out story and comments and form to post a new comment
+                                                let result3 = `<div style="border-style:solid;background-color: rgb(153, 201, 211) ;padding:20px">
+                                                    <h2>${data.title} </h2>
+                                                <h3>By ${data.author}</h3>
+                                                <p>${data.story}</p>
+                                                <h4>Comments:</h4>`;
+                                                if(data.comments.length>0){
+                                                    result3+=`<ul>`;
+                                                for(i in data.comments){
+                                                    result3+= `<li>${data.comments[i]}</li>`;
+                                                }
+                                                result3+=`</ul>`;
+                                            }
+                                            result3+=`<h5>Post a comment</h5>
+                                            <form id = postComment>
+                                                <p>
+                                                <input type="text" name="author" placeholder="Author name ..." id="author__name"style="background-color: rgb(236, 184, 184);">
+                                                </p>
+                                                <p>
+                                                <input type="text" name="password" placeholder="Password ..." id="pass__word"style="background-color: rgb(236, 184, 184);">
+                                                </p>
+                                                <p>
+                                                <textarea name="comments" placeholder="Write a comment" id="comment" cols="40" rows="3" style="background-color: rgb(236, 184, 184);"></textarea>
+                                                </p>
+                                                <input type="submit" value="Send Comment" style="background-color: rgb(236, 176, 176) ;border-style:inset;padding:2px 30px;text-align:left;display: inline-block;font-size: 12px; cursor: pointer;">
+                                                </form>
+                                                </div>`;//form to post a new comment
+                                                document.getElementById('result3').innerHTML = result3;
+                                                document.getElementById('result3').scrollIntoView();
+                                                bufferstr2=bufferstr1+'/'+temp2[j];
+                                                if (buffer2>0){
+                                                    buffer2 = 0;
+                                                    bufferstr2=bufferstr1+'/'+temp2[j];
+                                                    getTitles();
+                                                }
+                                                document.getElementById('postComment').addEventListener('submit',function postComment(event){//Used for posting comment
+                                                    try{
+                                                    event.preventDefault();
+                                                    const formData = new FormData(this);
+                                                    const searchParams = new URLSearchParams();//Url encoded string to store and send form data
+                                                    let pass = document.getElementById('pass__word').value;
+                                                    let auth = document.getElementById('author__name').value;
+                                                    for(const pair of formData){
+                                                        searchParams.append(pair[0],pair[1]);
+                                                    }
+                                                    fetch('/api/log/'+auth+'/'+pass)//gets true or false value to authenticate the user who wants to post a comment
+                                                    .then(function(res){
+                                                    return res.json();
+                                                   }).then(function(data){
+                                                   if(data===true){//author and password are correct
+                                                    fetch('/api/stories/'+bufferstr2+'/comments',{
+                                                        method:'POST',
+                                                        body:searchParams//posts formdata to the api database
+                                                    }).then(function(res){
+                                                        return res.json();
+                                                    });
+                                                    getStories();
+                                                }
+                                                else{//author and/or password are incorrect
+                                                    alert("author or password incorrect");
+                                                }
+                                                document.getElementById('postComment').reset();
+                                            });
+                                        }catch(e){
+                                            alert("server has stopped responding");
+                                        }
+                                                    });
+                                            });
+                                        }catch(e){
+                                            alert("server has stopped responding")
+                                        }
+                                        });
+                                    }
+                                });
+                            }
+                            catch(e){
+                                alert("server has stopped responding")
+                            }
+                            });
+                            }
+                            });
+                        }catch(e){
+                            alert("server has stopped responding");
+                        }
+                        });
+                        document.getElementById('postSign').addEventListener('submit', function postSign(event){//Form for signing up to the form
+                            try{
+                            event.preventDefault();
+                            const formData = new FormData(this);
+                            const searchParams = new URLSearchParams();//Url encoded string to store and send form data
+                            for(const pair of formData){
+                                searchParams.append(pair[0],pair[1]);
+                            }
+                            let pass1 = document.getElementById('pass_create').value;
+                            let pass2 = document.getElementById('pass__create').value;
+                            let auth = document.getElementById('author_create').value;
+                            fetch('/api/log/'+auth)//gets true or false value to check whether an author name is already in use
+                            .then(function(res){
+                                return res.json();
+                            }).then(function(data){
+                                if(data===false){//author nam is not in use
+                                    if(pass1===pass2){//if passwords match
+                                fetch('/api/createaccount',{
+                                method:'POST',
+                                body:searchParams//posts formdata to the api database
+                            }).then(function(res){
+                                return res.json();
+                            });
+                            alert('Author '+auth+' was created');
+                            }
+                        else{//if passwords don't match
+                            alert("Passwords don't match");
+                        }
+                    }
+                            else{//if author name is taken
+                                alert("Author Name taken");
+                            }
+                            })
+                            document.getElementById('postSign').reset();
+                        }catch(e){
+                            alert("server has stopped responding")
+                        }
+                        });
+
+                        document.getElementById('postData').addEventListener('submit',function postStory(event){//Form for posting a story
+                            try{
+                            event.preventDefault();
+                            let pass = document.getElementById('pass_word').value;
+                            let auth = document.getElementById('author_name').value;
+                            let tit = document.getElementById('story_title').value;
+                            const formData = new FormData(this);
+                            const searchParams = new URLSearchParams();//Url encoded string to store and send form data
+                            for(const pair of formData){
+                                searchParams.append(pair[0],pair[1]);
+                            }
+                            fetch('/api/log/'+auth+'/'+pass)//gets true or false value to authenticate the user who wants to post a comment
+                            .then(function(res){
+                                return res.json();
+                            }).then(function(data){
+                                if(data===true){//author and password are correct
+                            fetch('/api/stories',{
+                                method:'POST',
+                                body:searchParams
+                            }).then(function(res){
+                                return res.json();
+                            });
+                            alert("Story "+tit+" was posted");   
+                        }
+                        else{//author and/or password are incorrect
+                            alert("author or password incorrect");
+                        }
+                        document.getElementById('postData').reset();
+                    });
+                }catch(e){
+                    alert("server has stopped responding")
+                }
+                        });
+</script>
+</body>
+</html>
